@@ -11,13 +11,9 @@ node (''){
 // Building on the master for this demo
 node('') {
 
-    stage('SCM Checkout') {
-        checkout scm
-    }
-
     // Bundles up the current directory and sends it to OpenShift to run the s2i.
     stage('Build Images') {
-        sh "oc start-build ${env.APP_NAME} --from-dir=. --follow"
+        sh "oc start-build ${env.APP_NAME} --follow"
     }
 
 
