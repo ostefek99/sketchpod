@@ -16,20 +16,19 @@ node('') {
         sh "oc start-build ${env.APP_NAME} --follow"
     }
 
+    stage ('Security Scanning')
+    {
+        echo 'Security Scanning... please wait'
+        sleep 3
+    }
 
     // no user changes should be needed below this point
     stage ('Deploy to Dev') {
-        openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_DEV}", namespace: "${env.NAMESPACE_BUILD}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
-
-        openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEV}", verifyReplicaCount: true)
+        sh "oc tag ${env.NAMESPACE_DEV}/${env.APP_NAME}:latest ${env.NAMESPACE_TEST}/${env.APP_NAME}:latest"
     }
 
     stage ('Deploy to Demo') {
         input "Promote Application to Demo?"
-
-        openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_DEMO}", namespace: "${env.NAMESPACE_DEV}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
-
-        openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEMO}", verifyReplicaCount: true)
+        sh "oc tag ${env.NAMESPACE_DEMO}/${env.APP_NAME}:latest ${env.NAMESPACE_TEST}/${env.APP_NAME}:latest"
     }
-
 }
